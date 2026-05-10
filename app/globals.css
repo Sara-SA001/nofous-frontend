@@ -1,2 +1,17 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Noto Sans Arabic', 'Amiri', system-ui, sans-serif;
+}
+
+/* تحسينات للعربية */
+body {
+  font-family: 'Noto Sans Arabic', 'Amiri', system-ui, sans-serif;
+  direction: rtl;
+}
+
+.form-input {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-xl 
+         focus:outline-none focus:ring-2 focus:ring-blue-600 
+         focus:border-transparent transition-all;
+}
