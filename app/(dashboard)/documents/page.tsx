@@ -52,7 +52,7 @@ export default function DocumentsPage() {
 
     try {
       const res = await api.get(
-        `/documents/death-report?userId=${deathTargetNationalId}`,
+        `/documents/death-report?nationalId=${encodeURIComponent(deathTargetNationalId.trim())}`,
         {
           responseType: "blob",
         },

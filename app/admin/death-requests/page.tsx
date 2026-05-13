@@ -12,10 +12,18 @@ import {
   Eye,
 } from "lucide-react";
 
+const API_ORIGIN = "http://localhost:5000";
+const getFileUrl = (url?: string) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${API_ORIGIN}${url.startsWith("/") ? url : `/${url}`}`;
+};
+
 interface DeathRequest {
   id: number;
   requester?: { firstName: string; nationalId: string };
   target?: { firstName: string; nationalId: string; maritalStatus?: string };
+  user?: { firstName: string; nationalId: string; maritalStatus?: string };
   deathDate: string;
   deathPlace: string;
   notes?: string;
@@ -87,11 +95,14 @@ export default function DeathRequestsPage() {
         <p className="text-center py-12 text-gray-500">لا توجد طلبات حالياً</p>
       ) : (
         <div className="space-y-8">
-          {requests.map((req) => (
-            <div
-              key={req.id}
-              className="bg-white rounded-3xl p-8 shadow border"
-            >
+          {requests.map((req) => {
+            const target = req.target || req.user;
+
+            return (
+              <div
+                key={req.id}
+                className="bg-white rounded-3xl p-8 shadow border"
+              >
               <div className="flex justify-between">
                 <div>
                   <h3 className="text-2xl font-bold">طلب تسجيل وفاة</h3>
@@ -102,8 +113,8 @@ export default function DeathRequestsPage() {
                   </p>
                   <p>
                     المتوفى:{" "}
-                    <strong>{req.target?.firstName || "غير متوفر"}</strong>(
-                    {req.target?.nationalId || "—"})
+                    <strong>{target?.firstName || "غير متوفر"}</strong>(
+                    {target?.nationalId || "—"})
                   </p>
                 </div>
 
@@ -132,7 +143,7 @@ export default function DeathRequestsPage() {
                 </div>
                 <div>
                   <p className="text-gray-500">الحالة العائلية</p>
-                  <p>{req.target?.maritalStatus || "—"}</p>
+                  <p>{target?.maritalStatus || "—"}</p>
                 </div>
               </div>
 
@@ -144,8 +155,9 @@ export default function DeathRequestsPage() {
                 <div className="flex flex-wrap gap-4">
                   {req.document1Url && (
                     <a
-                      href={req.document1Url}
+                      href={getFileUrl(req.document1Url)}
                       target="_blank"
+                      rel="noreferrer"
                       className="text-blue-600 hover:underline"
                     >
                       📄 خبر الوفاة
@@ -153,8 +165,9 @@ export default function DeathRequestsPage() {
                   )}
                   {req.document2Url && (
                     <a
-                      href={req.document2Url}
+                      href={getFileUrl(req.document2Url)}
                       target="_blank"
+                      rel="noreferrer"
                       className="text-blue-600 hover:underline"
                     >
                       📄 تقرير طبي
@@ -162,8 +175,9 @@ export default function DeathRequestsPage() {
                   )}
                   {req.document3Url && (
                     <a
-                      href={req.document3Url}
+                      href={getFileUrl(req.document3Url)}
                       target="_blank"
+                      rel="noreferrer"
                       className="text-blue-600 hover:underline"
                     >
                       📄 دفتر العائلة
@@ -188,8 +202,9 @@ export default function DeathRequestsPage() {
                   </button>
                 </div>
               )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

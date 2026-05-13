@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "../../../lib/axios";
 import { useAuthStore } from "../../../store/authStore";
@@ -18,11 +18,15 @@ type ApiError = {
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, logout } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    logout();
+  }, [logout]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

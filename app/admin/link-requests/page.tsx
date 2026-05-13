@@ -1,11 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import api from "../../../lib/axios";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../../../store/authStore";
+
+const API_ORIGIN = "http://localhost:5000";
+const getFileUrl = (url?: string) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${API_ORIGIN}${url.startsWith("/") ? url : `/${url}`}`;
+};
 
 type ApiError = {
   response?: {
+    status?: number;
     data?: {
       message?: string;
     };
@@ -25,29 +35,42 @@ interface LinkRequest {
 }
 
 export default function LinkRequestsPage() {
+  const router = useRouter();
+  const { logout } = useAuthStore();
   const [requests, setRequests] = useState<LinkRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const hasFetched = useRef(false);
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       const res = await api.get("/admin/link-requests");
       setRequests(res.data.requests || []);
-    } catch {
-      toast.error("فشل في تحميل الطلبات");
+    } catch (error) {
+      const apiError = error as ApiError;
+      const status = apiError.response?.status;
+
+      if (status === 401 || status === 403) {
+        logout();
+        router.push("/admin/login");
+      }
+
+      toast.error(apiError.response?.data?.message || "فشل في تحميل الطلبات");
     } finally {
       setLoading(false);
     }
-  };
+  }, [logout, router]);
 
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     fetchRequests();
-  }, []);
+  }, [fetchRequests]);
 
   const handleAction = async (id: number, action: "approve" | "reject") => {
     setProcessingId(id);
     try {
-      await api.put(`/admin/link-requests/${id}/${action}`);
+      await api.put(`/admin/link-requests/${id}/${action}`, {});
       toast.success(action === "approve" ? "تمت الموافقة على الطلب" : "تم رفض الطلب");
       fetchRequests();
     } catch (error) {
@@ -86,6 +109,31 @@ export default function LinkRequestsPage() {
                   {req.status}
                 </span>
               </div>
+
+              {(req.document1Url || req.document2Url) && (
+                <div className="mt-6 flex flex-wrap gap-4">
+                  {req.document1Url && (
+                    <a
+                      href={getFileUrl(req.document1Url)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      المستند الأول
+                    </a>
+                  )}
+                  {req.document2Url && (
+                    <a
+                      href={getFileUrl(req.document2Url)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      المستند الثاني
+                    </a>
+                  )}
+                </div>
+              )}
 
               {req.status === "PENDING" && (
                 <div className="mt-8 flex gap-4">
