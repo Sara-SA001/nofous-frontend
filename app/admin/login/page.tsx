@@ -36,11 +36,13 @@ export default function AdminLoginPage() {
       const res = await api.post("/admin/login", { email, password });
 
       if (res.data.success) {
+        const apiRole = String(res.data.admin?.role || "ADMIN").toUpperCase();
+        const mappedRole = apiRole === "SUB_ADMIN" ? "sub_admin" : "admin";
         const adminUser = {
           id: res.data.admin.id,
           nationalId: res.data.admin.email,
           firstName: res.data.admin.username,
-          role: "admin",
+          role: mappedRole,
         } as User;
 
         login(adminUser, res.data.token);

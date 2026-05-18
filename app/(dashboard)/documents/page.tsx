@@ -132,7 +132,7 @@ export default function DocumentsPage() {
         </div>
 
         {/* بيان زواج - يظهر فقط إذا كان متزوج */}
-        {user?.maritalStatus === "MARRIED" && (
+        {(user?.maritalStatus === "MARRIED" || user?.maritalStatus === "WIDOWED") && (
           <div className="bg-white rounded-3xl p-8 shadow hover:shadow-2xl transition-all">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center">

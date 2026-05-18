@@ -14,6 +14,10 @@ const nextConfig = {
 
   // Enable compression
   compress: true,
+  // Turbopack root to silence multi-lockfile warning when workspace has multiple package-lock.json
+  turbopack: {
+    root: './',
+  },
 };
 
 export default nextConfig;

@@ -167,7 +167,7 @@ export default function DeathRequestPage() {
               value={formData.deathPlace}
               onChange={handleInputChange}
               className="form-input"
-              placeholder="مثال: مستشفى الاسد - دمشق"
+              placeholder="مثال: حلب "
               required
             />
           </div>

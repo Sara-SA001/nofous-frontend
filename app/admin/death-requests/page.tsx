@@ -3,14 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "../../../lib/axios";
 import toast from "react-hot-toast";
-import {
-  CheckCircle,
-  XCircle,
-  Clock,
-  AlertTriangle,
-  FileText,
-  Eye,
-} from "lucide-react";
+import { AlertTriangle, FileText } from "lucide-react";
 
 const API_ORIGIN = "http://localhost:5000";
 const getFileUrl = (url?: string) => {
@@ -22,11 +15,29 @@ const getFileUrl = (url?: string) => {
 interface DeathRequest {
   id: number;
   requester?: { firstName: string; nationalId: string };
-  target?: { firstName: string; nationalId: string; maritalStatus?: string };
-  user?: { firstName: string; nationalId: string; maritalStatus?: string };
+  target?: {
+    firstName: string;
+    nationalId: string;
+    maritalStatus?: string;
+    isAlive?: boolean;
+  };
+  user?: {
+    firstName: string;
+    nationalId: string;
+    maritalStatus?: string;
+    isAlive?: boolean;
+  };
   deathDate: string;
   deathPlace: string;
   notes?: string;
+  adminNotes?: string;
+  checkedAt?: string;
+  checkedBy?: {
+    id: number;
+    username: string;
+    fullName?: string;
+    role: "ADMIN" | "SUB_ADMIN";
+  };
   status: "PENDING" | "APPROVED" | "REJECTED";
   document1Url?: string;
   document2Url?: string;
@@ -59,7 +70,7 @@ export default function DeathRequestsPage() {
     setProcessingId(id);
     try {
       await api.put(`/admin/death-requests/${id}/approve`);
-      toast.success("✅ تمت الموافقة");
+      toast.success("تمت الموافقة");
       fetchRequests();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "فشل في الموافقة");
@@ -73,7 +84,7 @@ export default function DeathRequestsPage() {
     setProcessingId(id);
     try {
       await api.put(`/admin/death-requests/${id}/reject`);
-      toast.success("❌ تم رفض الطلب");
+      toast.success("تم رفض الطلب");
       fetchRequests();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "فشل في الرفض");
@@ -92,116 +103,127 @@ export default function DeathRequestsPage() {
       {loading ? (
         <p className="text-center py-12">جاري التحميل...</p>
       ) : requests.length === 0 ? (
-        <p className="text-center py-12 text-gray-500">لا توجد طلبات حالياً</p>
+        <p className="text-center py-12 text-gray-500">لا توجد طلبات حاليًا</p>
       ) : (
         <div className="space-y-8">
           {requests.map((req) => {
             const target = req.target || req.user;
 
             return (
-              <div
-                key={req.id}
-                className="bg-white rounded-3xl p-8 shadow border"
-              >
-              <div className="flex justify-between">
-                <div>
-                  <h3 className="text-2xl font-bold">طلب تسجيل وفاة</h3>
-                  <p className="mt-2">
-                    مقدم الطلب:{" "}
-                    <strong>{req.requester?.firstName || "غير متوفر"}</strong>(
-                    {req.requester?.nationalId || "—"})
-                  </p>
-                  <p>
-                    المتوفى:{" "}
-                    <strong>{target?.firstName || "غير متوفر"}</strong>(
-                    {target?.nationalId || "—"})
-                  </p>
-                </div>
+              <div key={req.id} className="bg-white rounded-3xl p-8 shadow border">
+                <div className="flex justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold">طلب تسجيل وفاة</h3>
+                    <p className="mt-2">
+                      مقدم الطلب: <strong>{req.requester?.firstName || "غير متوفر"}</strong> (
+                      {req.requester?.nationalId || "—"})
+                    </p>
+                    <p>
+                      المتوفى: <strong>{target?.firstName || "غير متوفر"}</strong> (
+                      {target?.nationalId || "—"})
+                    </p>
+                  </div>
 
-                <div
-                  className={`px-5 py-2 rounded-full text-sm font-medium
-                  ${
-                    req.status === "APPROVED"
-                      ? "bg-green-100 text-green-700"
-                      : req.status === "REJECTED"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {req.status}
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-2xl">
-                <div>
-                  <p className="text-gray-500">تاريخ الوفاة</p>
-                  <p>{new Date(req.deathDate).toLocaleDateString("ar-SY")}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">مكان الوفاة</p>
-                  <p>{req.deathPlace}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">الحالة العائلية</p>
-                  <p>{target?.maritalStatus || "—"}</p>
-                </div>
-              </div>
-
-              {/* المستندات */}
-              <div className="mt-8">
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                  <FileText size={20} /> المستندات المرفقة
-                </h4>
-                <div className="flex flex-wrap gap-4">
-                  {req.document1Url && (
-                    <a
-                      href={getFileUrl(req.document1Url)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      📄 خبر الوفاة
-                    </a>
-                  )}
-                  {req.document2Url && (
-                    <a
-                      href={getFileUrl(req.document2Url)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      📄 تقرير طبي
-                    </a>
-                  )}
-                  {req.document3Url && (
-                    <a
-                      href={getFileUrl(req.document3Url)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      📄 دفتر العائلة
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              {req.status === "PENDING" && (
-                <div className="mt-10 flex gap-4">
-                  <button
-                    onClick={() => handleApprove(req.id)}
-                    className="flex-1 bg-green-600 text-white py-4 rounded-2xl font-medium"
+                  <div
+                    className={`px-5 py-2 rounded-full text-sm font-medium ${
+                      req.status === "APPROVED"
+                        ? "bg-green-100 text-green-700"
+                        : req.status === "REJECTED"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
                   >
-                    ✅ الموافقة
-                  </button>
-                  <button
-                    onClick={() => handleReject(req.id)}
-                    className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-medium"
-                  >
-                    ❌ رفض
-                  </button>
+                    {req.status}
+                  </div>
                 </div>
-              )}
+
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-2xl">
+                  <div>
+                    <p className="text-gray-500">تاريخ الوفاة</p>
+                    <p>{new Date(req.deathDate).toLocaleDateString("ar-SY")}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">مكان الوفاة</p>
+                    <p>{req.deathPlace}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">الحالة</p>
+                    <p>{target?.isAlive === false ? "متوفى" : target?.maritalStatus || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">ملاحظات مقدم الطلب</p>
+                    <p>{req.notes || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">ملاحظات الإدارة</p>
+                    <p>{req.adminNotes || "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">تاريخ المعالجة</p>
+                    <p>{req.checkedAt ? new Date(req.checkedAt).toLocaleDateString("ar-SY") : "—"}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">تمت المعالجة بواسطة</p>
+                    <p>{req.checkedBy?.fullName || req.checkedBy?.username || "—"}</p>
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <FileText size={20} /> المستندات المرفقة
+                  </h4>
+                  <div className="flex flex-wrap gap-4">
+                    {req.document1Url && (
+                      <a
+                        href={getFileUrl(req.document1Url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        خبر الوفاة
+                      </a>
+                    )}
+                    {req.document2Url && (
+                      <a
+                        href={getFileUrl(req.document2Url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        تقرير طبي
+                      </a>
+                    )}
+                    {req.document3Url && (
+                      <a
+                        href={getFileUrl(req.document3Url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        دفتر العائلة
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {req.status === "PENDING" && (
+                  <div className="mt-10 flex gap-4">
+                    <button
+                      onClick={() => handleApprove(req.id)}
+                      disabled={processingId === req.id}
+                      className="flex-1 bg-green-600 text-white py-4 rounded-2xl font-medium disabled:opacity-60"
+                    >
+                      الموافقة
+                    </button>
+                    <button
+                      onClick={() => handleReject(req.id)}
+                      disabled={processingId === req.id}
+                      className="flex-1 bg-red-600 text-white py-4 rounded-2xl font-medium disabled:opacity-60"
+                    >
+                      رفض
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

@@ -6,6 +6,8 @@ import { useAuthStore } from "../../store/authStore";
 import {
   LogOut,
   Users,
+  UserPlus,
+  ClipboardCheck,
   Link as LinkIcon,
   AlertTriangle,
   LayoutDashboard,
@@ -22,36 +24,43 @@ export default function AdminNavbar() {
           <div className="font-bold text-2xl text-gray-800">نفوس - الأدمن</div>
 
           <div className="flex gap-8 text-sm font-medium">
-            <Link
-              href="/admin"
-              className="flex items-center gap-2 hover:text-blue-600"
-            >
+            <Link href="/admin" className="flex items-center gap-2 hover:text-blue-600">
               <LayoutDashboard size={20} /> لوحة التحكم
             </Link>
+
+            {user?.role === "admin" && (
+              <Link
+                href="/admin/create-subadmin"
+                className="flex items-center gap-2 hover:text-blue-600"
+              >
+                <UserPlus size={20} /> إنشاء SubAdmin
+              </Link>
+            )}
+
             <Link
-              href="/admin/link-requests"
+              href="/admin/registration-requests"
               className="flex items-center gap-2 hover:text-blue-600"
             >
+              <ClipboardCheck size={20} /> طلبات التسجيل
+            </Link>
+
+            <Link href="/admin/link-requests" className="flex items-center gap-2 hover:text-blue-600">
               <LinkIcon size={20} /> طلبات الارتباط
             </Link>
-            <Link
-              href="/admin/death-requests"
-              className="flex items-center gap-2 hover:text-blue-600"
-            >
+
+            <Link href="/admin/death-requests" className="flex items-center gap-2 hover:text-blue-600">
               <AlertTriangle size={20} /> طلبات الوفاة
             </Link>
-            <Link
-              href="/admin/users"
-              className="flex items-center gap-2 hover:text-blue-600"
-            >
-              <Users size={20} /> المستخدمين
+
+            <Link href="/admin/users" className="flex items-center gap-2 hover:text-blue-600">
+              <Users size={20} /> إدارة المستخدمين
             </Link>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="text-sm">
-            مرحباً، <span className="font-semibold">{user?.firstName}</span>
+            مرحبًا، <span className="font-semibold">{user?.firstName}</span>
           </div>
           <button
             onClick={() => {

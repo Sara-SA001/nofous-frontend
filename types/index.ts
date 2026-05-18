@@ -26,7 +26,7 @@ export interface User {
   fatherId?: number;
   husbandId?: number;
   isAlive?: boolean;
-  role: 'user' | 'admin';     // ← أضف هذا السطر
+  role: 'user' | 'admin' | 'sub_admin';     // ← أضف هذا السطر
   createdAt?: string;
   updatedAt?: string;
 }
