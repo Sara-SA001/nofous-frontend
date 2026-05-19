@@ -17,12 +17,18 @@ type TokenPayload = {
   userId?: number;
   nationalId?: string;
   role?: 'USER' | 'ADMIN' | 'SUB_ADMIN' | 'user' | 'admin' | 'sub_admin';
+  permissions?: string[];
   exp?: number;
 };
 
 const mapAdminRole = (role?: string) => {
   const normalized = role?.toUpperCase();
   return normalized === 'SUB_ADMIN' ? 'sub_admin' : 'admin';
+};
+
+const mapAdminPermissions = (permissions: unknown): string[] => {
+  if (!Array.isArray(permissions)) return [];
+  return permissions.filter((permission): permission is string => typeof permission === 'string');
 };
 
 // Note: token validation delegated to backend `/auth/me` endpoint.
@@ -93,6 +99,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const admin = res.data.admin;
 
         const role = mapAdminRole(admin.role);
+        const adminPermissions = mapAdminPermissions(admin.permissions);
 
         // إنشاء كائن User كامل بقيم افتراضية
         const userLike: User = {
@@ -114,6 +121,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           religion: 'MUSLIM',
           maritalStatus: 'SINGLE',
           role,
+          adminPermissions,
           isAlive: true,
           personalPhoto: "",
           idFrontPhoto: "",

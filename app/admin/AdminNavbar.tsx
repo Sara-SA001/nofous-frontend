@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,10 +12,32 @@ import {
   AlertTriangle,
   LayoutDashboard,
 } from "lucide-react";
+import { hasAdminPermission } from "../../lib/adminPermissions";
 
 export default function AdminNavbar() {
   const { logout, user } = useAuthStore();
   const router = useRouter();
+
+  const canManageRegistrations = hasAdminPermission(
+    user?.role,
+    user?.adminPermissions,
+    "MANAGE_REGISTRATION_REQUESTS",
+  );
+  const canManageLinks = hasAdminPermission(
+    user?.role,
+    user?.adminPermissions,
+    "MANAGE_LINK_REQUESTS",
+  );
+  const canManageDeaths = hasAdminPermission(
+    user?.role,
+    user?.adminPermissions,
+    "MANAGE_DEATH_REQUESTS",
+  );
+  const canManageUsers = hasAdminPermission(
+    user?.role,
+    user?.adminPermissions,
+    "MANAGE_USERS",
+  );
 
   return (
     <nav className="bg-white border-b shadow-sm">
@@ -37,24 +59,32 @@ export default function AdminNavbar() {
               </Link>
             )}
 
-            <Link
-              href="/admin/registration-requests"
-              className="flex items-center gap-2 hover:text-blue-600"
-            >
-              <ClipboardCheck size={20} /> طلبات التسجيل
-            </Link>
+            {canManageRegistrations && (
+              <Link
+                href="/admin/registration-requests"
+                className="flex items-center gap-2 hover:text-blue-600"
+              >
+                <ClipboardCheck size={20} /> طلبات التسجيل
+              </Link>
+            )}
 
-            <Link href="/admin/link-requests" className="flex items-center gap-2 hover:text-blue-600">
-              <LinkIcon size={20} /> طلبات الارتباط
-            </Link>
+            {canManageLinks && (
+              <Link href="/admin/link-requests" className="flex items-center gap-2 hover:text-blue-600">
+                <LinkIcon size={20} /> طلبات الارتباط
+              </Link>
+            )}
 
-            <Link href="/admin/death-requests" className="flex items-center gap-2 hover:text-blue-600">
-              <AlertTriangle size={20} /> طلبات الوفاة
-            </Link>
+            {canManageDeaths && (
+              <Link href="/admin/death-requests" className="flex items-center gap-2 hover:text-blue-600">
+                <AlertTriangle size={20} /> طلبات الوفاة
+              </Link>
+            )}
 
-            <Link href="/admin/users" className="flex items-center gap-2 hover:text-blue-600">
-              <Users size={20} /> إدارة المستخدمين
-            </Link>
+            {canManageUsers && (
+              <Link href="/admin/users" className="flex items-center gap-2 hover:text-blue-600">
+                <Users size={20} /> إدارة المستخدمين
+              </Link>
+            )}
           </div>
         </div>
 
@@ -76,3 +106,4 @@ export default function AdminNavbar() {
     </nav>
   );
 }
+

@@ -1,4 +1,4 @@
-export interface User {
+﻿export interface User {
   id: number;
   nationalId: string;
   firstName: string;
@@ -26,7 +26,8 @@ export interface User {
   fatherId?: number;
   husbandId?: number;
   isAlive?: boolean;
-  role: 'user' | 'admin' | 'sub_admin';     // ← أضف هذا السطر
+  role: 'user' | 'admin' | 'sub_admin';
+  adminPermissions?: string[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -40,3 +41,4 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
 }
+

@@ -1,8 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import api from "../../../lib/axios";
 import toast from "react-hot-toast";
+
+const permissionOptions = [
+  { key: "MANAGE_REGISTRATION_REQUESTS", label: "طلبات التسجيل" },
+  { key: "MANAGE_LINK_REQUESTS", label: "طلبات الارتباط" },
+  { key: "MANAGE_DEATH_REQUESTS", label: "طلبات الوفاة" },
+  { key: "MANAGE_USERS", label: "إدارة المستخدمين" },
+] as const;
+
+type PermissionKey = (typeof permissionOptions)[number]["key"];
 
 export default function CreateSubAdminPage() {
   const [formData, setFormData] = useState({
@@ -10,23 +19,60 @@ export default function CreateSubAdminPage() {
     email: "",
     password: "",
     fullName: "",
+    permissions: [] as PermissionKey[],
   });
   const [loading, setLoading] = useState(false);
 
+  const togglePermission = (permission: PermissionKey) => {
+    setFormData((prev) => {
+      const exists = prev.permissions.includes(permission);
+      return {
+        ...prev,
+        permissions: exists
+          ? prev.permissions.filter((p) => p !== permission)
+          : [...prev.permissions, permission],
+      };
+    });
+  };
+
+  const toggleAllPermissions = () => {
+    setFormData((prev) => {
+      const isAllSelected = prev.permissions.length === permissionOptions.length;
+      return {
+        ...prev,
+        permissions: isAllSelected ? [] : permissionOptions.map((option) => option.key),
+      };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.permissions.length === 0) {
+      toast.error("حدد صلاحية واحدة على الأقل");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await api.post("/admin/create-subadmin", formData);
-      toast.success("✅ تم إنشاء حساب SubAdmin بنجاح");
-      setFormData({ username: "", email: "", password: "", fullName: "" });
+      await api.post("/admin/create-subadmin", formData);
+      toast.success("تم إنشاء حساب SubAdmin بنجاح");
+      setFormData({
+        username: "",
+        email: "",
+        password: "",
+        fullName: "",
+        permissions: [],
+      });
     } catch (error: any) {
       toast.error(error.response?.data?.message || "فشل في إنشاء SubAdmin");
     } finally {
       setLoading(false);
     }
   };
+
+  const allSelected = formData.permissions.length === permissionOptions.length;
 
   return (
     <div className="max-w-lg mx-auto">
@@ -95,6 +141,33 @@ export default function CreateSubAdminPage() {
               className="form-input"
             />
           </div>
+
+          <div className="border rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold">صلاحيات SubAdmin</h2>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleAllPermissions}
+                />
+                كل الصلاحيات
+              </label>
+            </div>
+
+            <div className="grid gap-2">
+              {permissionOptions.map((option) => (
+                <label key={option.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.permissions.includes(option.key)}
+                    onChange={() => togglePermission(option.key)}
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
 
         <button
@@ -108,3 +181,4 @@ export default function CreateSubAdminPage() {
     </div>
   );
 }
+

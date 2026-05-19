@@ -1,9 +1,18 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
 import AdminNavbar from "./AdminNavbar";
+import { hasAdminPermission, type AdminPermission } from "../../lib/adminPermissions";
+
+const getRequiredPermissionForPath = (pathname: string): AdminPermission | null => {
+  if (pathname.startsWith("/admin/registration-requests")) return "MANAGE_REGISTRATION_REQUESTS";
+  if (pathname.startsWith("/admin/link-requests")) return "MANAGE_LINK_REQUESTS";
+  if (pathname.startsWith("/admin/death-requests")) return "MANAGE_DEATH_REQUESTS";
+  if (pathname.startsWith("/admin/users")) return "MANAGE_USERS";
+  return null;
+};
 
 export default function AdminLayout({
   children,
@@ -17,10 +26,14 @@ export default function AdminLayout({
   const isLoginPage = pathname === "/admin/login";
   const userRole = user?.role?.toLowerCase();
   const isAdminUser = userRole === "admin" || userRole === "sub_admin";
+  const requiredPermission = getRequiredPermissionForPath(pathname);
+  const canAccessPath =
+    !requiredPermission ||
+    hasAdminPermission(user?.role, user?.adminPermissions, requiredPermission);
 
   useEffect(() => {
     if (isLoginPage) return;
-    // Avoid returning a Promise from useEffect — call async checks internally
+
     if (checkAdminAuth) {
       (async () => {
         await checkAdminAuth();
@@ -34,20 +47,32 @@ export default function AdminLayout({
   }, [checkAuth, checkAdminAuth, isLoginPage]);
 
   useEffect(() => {
-  if (isLoginPage) return;
+    if (isLoginPage) return;
 
-  if (!isLoading && !isAuthenticated) {
-    router.push("/admin/login");
-    return;
-  }
-
-  // السماح لكل من ADMIN و SUB_ADMIN
-  if (!isLoading && isAuthenticated && user) {
-    if (!isAdminUser) {
+    if (!isLoading && !isAuthenticated) {
       router.push("/admin/login");
+      return;
     }
-  }
-}, [isAuthenticated, isAdminUser, isLoading, isLoginPage, user, router]);
+
+    if (!isLoading && isAuthenticated && user) {
+      if (!isAdminUser) {
+        router.push("/admin/login");
+        return;
+      }
+
+      if (!canAccessPath) {
+        router.push("/admin");
+      }
+    }
+  }, [
+    isAuthenticated,
+    isAdminUser,
+    isLoading,
+    isLoginPage,
+    user,
+    router,
+    canAccessPath,
+  ]);
 
   if (isLoginPage) {
     return <>{children}</>;
@@ -82,6 +107,10 @@ export default function AdminLayout({
     );
   }
 
+  if (!canAccessPath) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminNavbar />
@@ -89,3 +118,4 @@ export default function AdminLayout({
     </div>
   );
 }
+

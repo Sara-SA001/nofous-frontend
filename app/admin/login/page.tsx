@@ -43,6 +43,9 @@ export default function AdminLoginPage() {
           nationalId: res.data.admin.email,
           firstName: res.data.admin.username,
           role: mappedRole,
+          adminPermissions: Array.isArray(res.data.admin.permissions)
+            ? res.data.admin.permissions
+            : [],
         } as User;
 
         login(adminUser, res.data.token);
