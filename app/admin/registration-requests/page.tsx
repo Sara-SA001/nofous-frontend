@@ -13,7 +13,15 @@ interface RegistrationRequest {
   gender: string;
   dateOfBirth: string;
   createdAt: string;
+  personalPhoto?: string | null;
+  idFrontPhoto?: string | null;
+  idBackPhoto?: string | null;
 }
+
+const getFileUrl = (url?: string | null) => {
+  if (!url) return null;
+  return url.startsWith("http") ? url : `http://localhost:5000${url}`;
+};
 
 export default function RegistrationRequestsPage() {
   const [requests, setRequests] = useState<RegistrationRequest[]>([]);
@@ -103,21 +111,71 @@ export default function RegistrationRequestsPage() {
                 </div>
               </div>
 
-              <div className="mt-8 flex gap-4">
-                <button
-                  onClick={() => handleApprove(req.id)}
-                  disabled={processingId === req.id}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-medium disabled:opacity-50"
-                >
-                  ✅ الموافقة على الحساب
-                </button>
-                <button
-                  onClick={() => handleReject(req.id)}
-                  disabled={processingId === req.id}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-medium disabled:opacity-50"
-                >
-                  ❌ رفض الحساب
-                </button>
+              <div className="mt-8 grid gap-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {["personalPhoto", "idFrontPhoto", "idBackPhoto"].map(
+                    (field) => {
+                      const label =
+                        field === "personalPhoto"
+                          ? "الصورة الشخصية"
+                          : field === "idFrontPhoto"
+                            ? "صورة هوية أمامية"
+                            : "صورة هوية خلفية";
+                      const url =
+                        field === "personalPhoto"
+                          ? getFileUrl(req.personalPhoto)
+                          : field === "idFrontPhoto"
+                            ? getFileUrl(req.idFrontPhoto)
+                            : getFileUrl(req.idBackPhoto);
+
+                      return (
+                        <div
+                          key={field}
+                          className="rounded-3xl border p-4 bg-slate-50 text-center"
+                        >
+                          <div className="text-sm font-medium text-slate-700 mb-2">
+                            {label}
+                          </div>
+                          {url ? (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="block overflow-hidden rounded-2xl border border-slate-200 bg-white hover:border-blue-500"
+                            >
+                              <img
+                                src={url}
+                                alt={label}
+                                className="h-36 w-full object-cover"
+                              />
+                            </a>
+                          ) : (
+                            <div className="py-10 text-sm text-slate-500">
+                              لا توجد صورة
+                            </div>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => handleApprove(req.id)}
+                    disabled={processingId === req.id}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-medium disabled:opacity-50"
+                  >
+                    ✅ الموافقة على الحساب
+                  </button>
+                  <button
+                    onClick={() => handleReject(req.id)}
+                    disabled={processingId === req.id}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-medium disabled:opacity-50"
+                  >
+                    ❌ رفض الحساب
+                  </button>
+                </div>
               </div>
             </div>
           ))}
