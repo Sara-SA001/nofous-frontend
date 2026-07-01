@@ -10,12 +10,26 @@ interface RegistrationRequest {
   nationalId: string;
   firstName: string;
   nisba?: string;
+  fatherName: string;
+  grandfatherName?: string;
+  motherName: string;
   gender: string;
+  religion: string;
+  maritalStatus: string;
   dateOfBirth: string;
+  placeOfBirth: string;
+  nationality: string;
+  governorate: string;
+  amanah?: string;
+  registrationPlace?: string;
+  registrationNumber?: string;
+  cardNumber?: string;
+  issueDate?: string | null;
   createdAt: string;
   personalPhoto?: string | null;
   idFrontPhoto?: string | null;
   idBackPhoto?: string | null;
+  signature?: string | null;
 }
 
 const getFileUrl = (url?: string | null) => {
@@ -111,56 +125,127 @@ export default function RegistrationRequestsPage() {
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-4">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {["personalPhoto", "idFrontPhoto", "idBackPhoto"].map(
-                    (field) => {
-                      const label =
-                        field === "personalPhoto"
-                          ? "الصورة الشخصية"
-                          : field === "idFrontPhoto"
-                            ? "صورة هوية أمامية"
-                            : "صورة هوية خلفية";
-                      const url =
-                        field === "personalPhoto"
-                          ? getFileUrl(req.personalPhoto)
-                          : field === "idFrontPhoto"
-                            ? getFileUrl(req.idFrontPhoto)
-                            : getFileUrl(req.idBackPhoto);
-
-                      return (
+              <div className="mt-8 grid gap-6">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-3xl border bg-slate-50 p-6">
+                    <h4 className="text-lg font-semibold mb-4">
+                      البيانات الشخصية
+                    </h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {[
+                        { label: "الرقم الوطني", value: req.nationalId },
+                        { label: "الاسم الأول", value: req.firstName },
+                        { label: "النسبة", value: req.nisba || "غير محدد" },
+                        { label: "اسم الأب", value: req.fatherName },
+                        {
+                          label: "اسم الجد",
+                          value: req.grandfatherName || "غير محدد",
+                        },
+                        { label: "اسم الأم", value: req.motherName },
+                        { label: "الجنس", value: req.gender },
+                        { label: "الدين", value: req.religion },
+                        {
+                          label: "الحالة الاجتماعية",
+                          value: req.maritalStatus,
+                        },
+                        {
+                          label: "تاريخ الميلاد",
+                          value: new Date(req.dateOfBirth).toLocaleDateString(
+                            "ar-SY",
+                          ),
+                        },
+                        { label: "مكان الميلاد", value: req.placeOfBirth },
+                        { label: "الجنسية", value: req.nationality },
+                        { label: "المحافظة", value: req.governorate },
+                        { label: "الأمانة", value: req.amanah || "غير محدد" },
+                        {
+                          label: "مكان التسجيل",
+                          value: req.registrationPlace || "غير محدد",
+                        },
+                        {
+                          label: "رقم التسجيل",
+                          value: req.registrationNumber || "غير محدد",
+                        },
+                        {
+                          label: "رقم البطاقة",
+                          value: req.cardNumber || "غير محدد",
+                        },
+                        {
+                          label: "تاريخ الإصدار",
+                          value: req.issueDate
+                            ? new Date(req.issueDate).toLocaleDateString(
+                                "ar-SY",
+                              )
+                            : "غير محدد",
+                        },
+                      ].map((item) => (
                         <div
-                          key={field}
-                          className="rounded-3xl border p-4 bg-slate-50 text-center"
+                          key={item.label}
+                          className="rounded-3xl border border-slate-200 bg-white p-4"
                         >
-                          <div className="text-sm font-medium text-slate-700 mb-2">
-                            {label}
+                          <div className="text-sm text-slate-500">
+                            {item.label}
                           </div>
-                          {url ? (
+                          <div className="mt-2 font-medium text-slate-800">
+                            {item.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border bg-slate-50 p-6">
+                    <h4 className="text-lg font-semibold mb-4">
+                      الوثائق والوسائط
+                    </h4>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {[
+                        {
+                          label: "الصورة الشخصية",
+                          url: getFileUrl(req.personalPhoto),
+                        },
+                        {
+                          label: "هوية أمامية",
+                          url: getFileUrl(req.idFrontPhoto),
+                        },
+                        {
+                          label: "هوية خلفية",
+                          url: getFileUrl(req.idBackPhoto),
+                        },
+                        { label: "التوقيع", url: getFileUrl(req.signature) },
+                      ].map((file) => (
+                        <div
+                          key={file.label}
+                          className="rounded-3xl border border-slate-200 bg-white overflow-hidden"
+                        >
+                          <div className="px-4 py-3 border-b border-slate-200 bg-slate-100 text-sm font-medium text-slate-700">
+                            {file.label}
+                          </div>
+                          {file.url ? (
                             <a
-                              href={url}
+                              href={file.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="block overflow-hidden rounded-2xl border border-slate-200 bg-white hover:border-blue-500"
+                              className="block h-48 overflow-hidden"
                             >
                               <img
-                                src={url}
-                                alt={label}
-                                className="h-36 w-full object-cover"
+                                src={file.url}
+                                alt={file.label}
+                                className="h-full w-full object-cover"
                               />
                             </a>
                           ) : (
-                            <div className="py-10 text-sm text-slate-500">
+                            <div className="flex h-48 items-center justify-center text-sm text-slate-500">
                               لا توجد صورة
                             </div>
                           )}
                         </div>
-                      );
-                    },
-                  )}
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row">
                   <button
                     onClick={() => handleApprove(req.id)}
                     disabled={processingId === req.id}

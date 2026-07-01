@@ -6,7 +6,6 @@
   fatherName: string;
   grandfatherName?: string;
   motherName: string;
-  motherNisba?: string;
   dateOfBirth: string;
   placeOfBirth: string;
   nationality: string;

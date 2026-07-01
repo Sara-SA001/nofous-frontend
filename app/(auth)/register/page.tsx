@@ -49,6 +49,7 @@ export default function RegisterPage() {
     personalPhoto: null as File | null,
     idFrontPhoto: null as File | null,
     idBackPhoto: null as File | null,
+    signature: null as File | null,
   });
 
   const [loading, setLoading] = useState(false);
@@ -76,10 +77,18 @@ export default function RegisterPage() {
       if (value) data.append(key, value);
     });
 
+    // التحقق من التوقيع الإلزامي
+    if (!files.signature) {
+      toast.error("يرجى رفع توقيع صاحب العلاقة قبل الإرسال");
+      setLoading(false);
+      return;
+    }
+
     // إضافة الصور
     if (files.personalPhoto) data.append("personalPhoto", files.personalPhoto);
     if (files.idFrontPhoto) data.append("idFrontPhoto", files.idFrontPhoto);
     if (files.idBackPhoto) data.append("idBackPhoto", files.idBackPhoto);
+    data.append("signature", files.signature);
 
     try {
       const res = await api.post("/auth/register", data);
@@ -378,6 +387,20 @@ export default function RegisterPage() {
                 <input
                   type="file"
                   name="idBackPhoto"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="form-input"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  توقيع صاحب العلاقة (ارفع صورة واضحة لتوقيعك على خلفية بيضاء)
+                </label>
+                <input
+                  type="file"
+                  name="signature"
                   onChange={handleFileChange}
                   accept="image/*"
                   className="form-input"
