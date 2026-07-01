@@ -29,7 +29,6 @@ interface RegistrationRequest {
   personalPhoto?: string | null;
   idFrontPhoto?: string | null;
   idBackPhoto?: string | null;
-  signature?: string | null;
 }
 
 const getFileUrl = (url?: string | null) => {
@@ -212,7 +211,6 @@ export default function RegistrationRequestsPage() {
                           label: "هوية خلفية",
                           url: getFileUrl(req.idBackPhoto),
                         },
-                        { label: "التوقيع", url: getFileUrl(req.signature) },
                       ].map((file) => (
                         <div
                           key={file.label}
